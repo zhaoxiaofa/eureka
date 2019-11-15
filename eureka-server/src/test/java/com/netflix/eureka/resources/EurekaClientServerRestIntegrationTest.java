@@ -73,6 +73,9 @@ public class EurekaClientServerRestIntegrationTest {
         startServer();
         createEurekaServerConfig();
 
+        /**
+         * 构造器模式
+         */
         httpClientFactory = JerseyEurekaHttpClientFactory.newBuilder()
                 .withClientName("testEurekaClient")
                 .withConnectionTimeout(1000)
@@ -106,6 +109,10 @@ public class EurekaClientServerRestIntegrationTest {
         }
     }
 
+    /**
+     * 测试注册
+     * @throws Exception
+     */
     @Test
     public void testRegistration() throws Exception {
         InstanceInfo instanceInfo = instanceInfoIt.next();
@@ -114,6 +121,10 @@ public class EurekaClientServerRestIntegrationTest {
         assertThat(httpResponse.getStatusCode(), is(equalTo(204)));
     }
 
+    /**
+     * 测试发送心跳
+     * @throws Exception
+     */
     @Test
     public void testHeartbeat() throws Exception {
         // Register first
@@ -231,6 +242,11 @@ public class EurekaClientServerRestIntegrationTest {
 
     }
 
+    /**
+     * 手动打包
+     * 使用jetty启动web服务器
+     * @throws Exception
+     */
     private static void startServer() throws Exception {
         File warFile = findWar();
 

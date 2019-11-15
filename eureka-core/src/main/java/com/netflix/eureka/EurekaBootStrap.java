@@ -102,6 +102,7 @@ public class EurekaBootStrap implements ServletContextListener {
     }
 
     /**
+     * 这个就是eureka启动的入口 包含了集群节点之间的数据同步和发布注册
      * Initializes Eureka, including syncing up with other Eureka peers and publishing the registry.
      *
      * @see
@@ -122,11 +123,13 @@ public class EurekaBootStrap implements ServletContextListener {
     }
 
     /**
+     * 初始化环境和配置
      * Users can override to initialize the environment themselves.
      */
     protected void initEurekaEnvironment() throws Exception {
         logger.info("Setting the eureka configuration..");
 
+        // ConfigurationManager.getConfigInstance() 这里使用了非常经典的基于volatile关键字的double-check单例模式
         String dataCenter = ConfigurationManager.getConfigInstance().getString(EUREKA_DATACENTER);
         if (dataCenter == null) {
             logger.info("Eureka data center value eureka.datacenter is not set, defaulting to default");

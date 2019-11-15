@@ -41,6 +41,10 @@ import com.netflix.discovery.EurekaClientConfig;
  * makes a REST call to a supported service endpoint
  *
  */
+
+/**
+ * 看这个类可以吃透Client启动的一些原理
+ */
 public class ExampleEurekaClient {
 
     private static ApplicationInfoManager applicationInfoManager;
