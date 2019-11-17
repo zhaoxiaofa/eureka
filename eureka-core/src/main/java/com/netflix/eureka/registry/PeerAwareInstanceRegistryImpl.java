@@ -70,6 +70,7 @@ import javax.inject.Singleton;
  * </p>
  *
  * <p>
+ *     启动的时候会去别的实例上拉取注册表的配置，如果失败，则不会对外暴露注册功能
  * When the eureka server starts up it tries to fetch all the registry
  * information from the peer eureka nodes.If for some reason this operation
  * fails, the server does not allow the user to get the registry information for
@@ -78,6 +79,8 @@ import javax.inject.Singleton;
  * </p>
  *
  * <p>
+ *     心跳机制：如果在一段时间内，和服务实例之间的心跳断掉的比例超过一定的数值，
+ *     那么eureka就会认为自己的网路出现了故障，不会踢出任何实例
  * One important thing to note about <em>renewals</em>.If the renewal drops more
  * than the specified threshold as specified in
  * {@link com.netflix.eureka.EurekaServerConfig#getRenewalPercentThreshold()} within a period of
@@ -131,6 +134,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
             ServerCodecs serverCodecs,
             EurekaClient eurekaClient
     ) {
+        // 调用父类的构造方法
         super(serverConfig, clientConfig, serverCodecs);
         this.eurekaClient = eurekaClient;
         this.numberOfReplicationsLastMin = new MeasuredRate(1000 * 60 * 1);

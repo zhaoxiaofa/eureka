@@ -82,6 +82,10 @@ public class ApplicationResourceTest extends AbstractTester {
         }
     }
 
+    /**
+     * debug这个单元测试方法
+     * @throws Exception
+     */
     @Test
     public void testGoodRegistration() throws Exception {
         InstanceInfo noIdInfo = InstanceInfoGenerator.takeOne();

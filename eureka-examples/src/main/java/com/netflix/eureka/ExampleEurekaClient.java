@@ -43,7 +43,7 @@ import com.netflix.discovery.EurekaClientConfig;
  */
 
 /**
- * 看这个类可以吃透Client启动的一些原理
+ * 研究这个类可以吃透Client启动的一些原理
  */
 public class ExampleEurekaClient {
 
@@ -53,7 +53,7 @@ public class ExampleEurekaClient {
     private static synchronized ApplicationInfoManager initializeApplicationInfoManager(EurekaInstanceConfig instanceConfig) {
         if (applicationInfoManager == null) {
             InstanceInfo instanceInfo = new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get();
-            applicationInfoManager = new ApplicationInfoManager(instanceConfig, instanceInfo);
+            applicationInfoManager = new  ApplicationInfoManager(instanceConfig, instanceInfo);
         }
 
         return applicationInfoManager;
@@ -119,9 +119,11 @@ public class ExampleEurekaClient {
     }
 
     public static void main(String[] args) {
+        // 这个就相当于自己写的一个服务
         ExampleEurekaClient sampleClient = new ExampleEurekaClient();
 
         // create the client
+        // 创建服务实例管理器 这个过程和 eureka-server 启动是一样的
         ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new MyDataCenterInstanceConfig());
         EurekaClient client = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
 

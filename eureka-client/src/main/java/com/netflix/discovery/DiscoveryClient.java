@@ -295,8 +295,15 @@ public class DiscoveryClient implements EurekaClient {
         });
     }
 
+    /**
+     * TODO 非常重要
+     * @param applicationInfoManager
+     * @param config
+     * @param args
+     * @param backupRegistryProvider
+     */
     @Inject
-    DiscoveryClient(ApplicationInfoManager applicationInfoManager, EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs args,
+     DiscoveryClient(ApplicationInfoManager applicationInfoManager, EurekaClientConfig config, AbstractDiscoveryClientOptionalArgs args,
                     Provider<BackupRegistry> backupRegistryProvider) {
         if (args != null) {
             this.healthCheckHandlerProvider = args.healthCheckHandlerProvider;
@@ -304,6 +311,7 @@ public class DiscoveryClient implements EurekaClient {
             this.eventListeners.addAll(args.getEventListeners());
             this.preRegistrationHandler = args.preRegistrationHandler;
         } else {
+            // 默认传进来的 args 是 null ，所以会走这个方法体
             this.healthCheckCallbackProvider = null;
             this.healthCheckHandlerProvider = null;
             this.preRegistrationHandler = null;
@@ -314,9 +322,11 @@ public class DiscoveryClient implements EurekaClient {
 
         clientConfig = config;
         staticClientConfig = clientConfig;
+        // 基于接口提供配置项目读取功能
         transportConfig = config.getTransportConfig();
         instanceInfo = myInfo;
         if (myInfo != null) {
+            // appName 是服务的名称
             appPathIdentifier = instanceInfo.getAppName() + "/" + instanceInfo.getId();
         } else {
             logger.warn("Setting instanceInfo to a passed in null value");
@@ -332,12 +342,16 @@ public class DiscoveryClient implements EurekaClient {
         remoteRegionsToFetch = new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());
         remoteRegionsRef = new AtomicReference<>(remoteRegionsToFetch.get() == null ? null : remoteRegionsToFetch.get().split(","));
 
+        // 在使用中，是要在properties文件中配置true或者false
+        // 是否去抓取配置
         if (config.shouldFetchRegistry()) {
             this.registryStalenessMonitor = new ThresholdLevelsMetric(this, METRIC_REGISTRY_PREFIX + "lastUpdateSec_", new long[]{15L, 30L, 60L, 120L, 240L, 480L});
         } else {
             this.registryStalenessMonitor = ThresholdLevelsMetric.NO_OP_METRIC;
         }
 
+        // 这个和FetchRegistry一样，也是要在properties文件中配置
+        // 这个代表是否要向注册中心去注册
         if (config.shouldRegisterWithEureka()) {
             this.heartbeatStalenessMonitor = new ThresholdLevelsMetric(this, METRIC_REGISTRATION_PREFIX + "lastHeartbeatSec_", new long[]{15L, 30L, 60L, 120L, 240L, 480L});
         } else {
@@ -346,6 +360,7 @@ public class DiscoveryClient implements EurekaClient {
 
         logger.info("Initializing Eureka in region {}", clientConfig.getRegion());
 
+        // 既不需要注册，又不要抓取配置 使用场景就是：自己是eureka-server，并且是单机部署
         if (!config.shouldRegisterWithEureka() && !config.shouldFetchRegistry()) {
             logger.info("Client configured to neither register nor query for data.");
             scheduler = null;
@@ -367,6 +382,10 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         try {
+            /**
+             * 卧槽！！！
+             * 这里使用到了三种线程池
+             */
             // default size of 2 - 1 each for heartbeat and cacheRefresh
             scheduler = Executors.newScheduledThreadPool(2,
                     new ThreadFactoryBuilder()
@@ -374,6 +393,7 @@ public class DiscoveryClient implements EurekaClient {
                             .setDaemon(true)
                             .build());
 
+            // 保持心跳的线程池 默认最大线程数量为5
             heartbeatExecutor = new ThreadPoolExecutor(
                     1, clientConfig.getHeartbeatExecutorThreadPoolSize(), 0, TimeUnit.SECONDS,
                     new SynchronousQueue<Runnable>(),
@@ -383,6 +403,7 @@ public class DiscoveryClient implements EurekaClient {
                             .build()
             );  // use direct handoff
 
+            // 支持缓存刷新的线程池
             cacheRefreshExecutor = new ThreadPoolExecutor(
                     1, clientConfig.getCacheRefreshExecutorThreadPoolSize(), 0, TimeUnit.SECONDS,
                     new SynchronousQueue<Runnable>(),
@@ -393,6 +414,7 @@ public class DiscoveryClient implements EurekaClient {
             );  // use direct handoff
 
             eurekaTransport = new EurekaTransport();
+            // 这个方法里面有很多逻辑
             scheduleServerEndpointTask(eurekaTransport, args);
 
             AzToRegionMapper azToRegionMapper;
@@ -410,6 +432,7 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {
+            // 从备用的注册表中去抓取
             fetchRegistryFromBackup();
         }
 
@@ -417,9 +440,11 @@ public class DiscoveryClient implements EurekaClient {
         if (this.preRegistrationHandler != null) {
             this.preRegistrationHandler.beforeRegistration();
         }
+        // 初始化调度任务 这个很重要
         initScheduledTasks();
 
         try {
+            // 注册了一个监控
             Monitors.registerObject(this);
         } catch (Throwable e) {
             logger.warn("Cannot register timers", e);
@@ -1277,6 +1302,7 @@ public class DiscoveryClient implements EurekaClient {
                     clientConfig.getInstanceInfoReplicationIntervalSeconds(),
                     2); // burstSize
 
+            // 服务状态变更的监听器
             statusChangeListener = new ApplicationInfoManager.StatusChangeListener() {
                 @Override
                 public String getId() {
@@ -1296,10 +1322,12 @@ public class DiscoveryClient implements EurekaClient {
                 }
             };
 
+            // 如果配置了监听 启动监听器
             if (clientConfig.shouldOnDemandUpdateStatusChange()) {
                 applicationInfoManager.registerStatusChangeListener(statusChangeListener);
             }
 
+            // 这里是启动了一个线程
             instanceInfoReplicator.start(clientConfig.getInitialInstanceInfoReplicationIntervalSeconds());
         } else {
             logger.info("Not registering with Eureka server per configuration");
