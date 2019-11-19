@@ -268,6 +268,7 @@ public class InstanceResource {
     }
 
     /**
+     * 当client下线的时候，调用这个方法
      * Handles cancellation of leases for this particular instance.
      *
      * @param isReplication

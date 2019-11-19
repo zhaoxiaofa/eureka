@@ -130,6 +130,7 @@ public class ApplicationResource {
     }
 
     /**
+     * 这个是server接收client注册的处理方法
      * Registers information about a particular instance for an
      * {@link com.netflix.discovery.shared.Application}.
      *
@@ -181,7 +182,7 @@ public class ApplicationResource {
                 }
             }
         }
-
+        // 这里是注册到 server 中
         registry.register(info, "true".equals(isReplication));
         return Response.status(204).build();  // 204 to be backwards compatible
     }
