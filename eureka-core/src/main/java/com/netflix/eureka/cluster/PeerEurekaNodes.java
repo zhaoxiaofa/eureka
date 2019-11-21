@@ -74,7 +74,7 @@ public class PeerEurekaNodes {
     }
 
     /**
-     * 这个是启动 eureka 集群的方法
+     * 这个是 eureka 集群节点同步的方法
      */
     public void start() {
         taskExecutor = Executors.newSingleThreadScheduledExecutor(

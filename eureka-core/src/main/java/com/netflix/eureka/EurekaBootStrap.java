@@ -228,6 +228,10 @@ public class EurekaBootStrap implements ServletContextListener {
         // Copy registry from neighboring eureka node
         // 集群数据同步 从隔壁节点拷贝数据
         int registryCount = registry.syncUp();
+        // 这里是自动感知client下线的地方
+        // 猜一下，自动感知client下线，如果让我来设计，那肯定是后台起一个线程，每隔一段时间去扫一下所有实例的最后心跳时间
+        // 如下心跳时间早于某个时间，那肯定就判断是过期了。那这个后台线程和定时任务什么时候设置和启动呢？肯定是eureka-server在
+        // 启动的时候去开始线程和定时任务，那肯定是在 EurekaBootStrap 中去找
         registry.openForTraffic(applicationInfoManager, registryCount);
 
         // Register all monitoring statistics.

@@ -88,6 +88,7 @@ public class InstanceResource {
     }
 
     /**
+     * eureka-client端同步心跳的接口
      * A put request for renewing lease from a client instance.
      *
      * @param isReplication

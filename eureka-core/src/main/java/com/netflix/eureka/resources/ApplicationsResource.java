@@ -95,6 +95,7 @@ public class ApplicationsResource {
     }
 
     /**
+     * 这个接口获取全量的注册表信息
      * Get information about all {@link com.netflix.discovery.shared.Applications}.
      *
      * @param version the version of the request.
@@ -238,21 +239,4 @@ public class ApplicationsResource {
         }
     }
 
-
-    public static int reverse(int x) {
-        if (x != 0) {
-            if (x > 0) {
-                int tmp = Integer.valueOf(new StringBuilder(String.valueOf(x)).reverse().toString());
-                return tmp > Integer.MAX_VALUE ? 0 : tmp;
-            }
-            int tmp = Integer.valueOf(new StringBuilder(-x).reverse().toString());
-            return -tmp < Integer.MIN_VALUE ? 0 : -tmp;
-        }
-        return 0;
-    }
-
-    public static void main(String[] args) {
-        int result = reverse(123);
-        System.out.println(result);
-    }
 }

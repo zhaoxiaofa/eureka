@@ -220,6 +220,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
                     break;
                 }
             }
+            //
             Applications apps = eurekaClient.getApplications();
             for (Application app : apps.getRegisteredApplications()) {
                 for (InstanceInfo instance : app.getInstances()) {
@@ -237,10 +238,17 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         return count;
     }
 
+    /**
+     * 自动感知client故障
+     * @param applicationInfoManager
+     * @param count
+     */
     @Override
     public void openForTraffic(ApplicationInfoManager applicationInfoManager, int count) {
         // Renewals happen every 30 seconds and for a minute it should be a factor of 2.
+        // 传进来的 count 值是eureka-server在启动的时候从别的server节点
         this.expectedNumberOfRenewsPerMin = count * 2;
+        // 这个参数和server的自我保护机制有关 renewalPercentThreshold:这个参数是自我保护的系数，保持心跳数必须大于服务总数*0.85
         this.numberOfRenewsPerMinThreshold =
                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
         logger.info("Got " + count + " instances from neighboring DS node");
@@ -257,6 +265,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         }
         logger.info("Changing status to UP");
         applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
+        // 前面是一堆校验和赋值，下面才是核心代码
         super.postInit();
     }
 
@@ -480,16 +489,27 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
         }
     }
 
+    /**
+     * 是否清理故障服务
+     * 如果返回true，就清理故障实例
+     * @return
+     */
     @Override
     public boolean isLeaseExpirationEnabled() {
+        // isSelfPreservationModeEnabled 是自我保护机制的设置，默认是true
+        // 如果设置的是false，即不需要自我保护，那么这里直接返回true，直接开始清理故障的服务
         if (!isSelfPreservationModeEnabled()) {
             // The self preservation mode is disabled, hence allowing the instances to expire.
             return true;
         }
+        // 这一行代码是真正判断故障的服务是否超过了一定的比例
+        // 比较期望心跳数和上一分钟实际接收心跳数的对比
+        // 那么，这个期望的心跳值是怎么来的呢？
         return numberOfRenewsPerMinThreshold > 0 && getNumOfRenewsInLastMin() > numberOfRenewsPerMinThreshold;
     }
 
     /**
+     * 校验自我保护机制是否开启，默认是true
      * Checks to see if the self-preservation mode is enabled.
      *
      * <p>

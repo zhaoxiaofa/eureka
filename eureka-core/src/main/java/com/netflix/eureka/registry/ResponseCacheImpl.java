@@ -251,6 +251,7 @@ public class ResponseCacheImpl implements ResponseCache {
                         new Key(Key.EntityType.Application, ALL_APPS_DELTA, type, v, EurekaAccept.full),
                         new Key(Key.EntityType.Application, ALL_APPS_DELTA, type, v, EurekaAccept.compact)
                 );
+                // 下面的vip这个可以先忽略掉
                 if (null != vipAddress) {
                     invalidate(new Key(Key.EntityType.VIP, vipAddress, type, v, EurekaAccept.full));
                 }
@@ -270,7 +271,7 @@ public class ResponseCacheImpl implements ResponseCache {
         for (Key key : keys) {
             logger.debug("Invalidating the response cache key : {} {} {} {}, {}",
                     key.getEntityType(), key.getName(), key.getVersion(), key.getType(), key.getEurekaAccept());
-
+            // 读写缓存过期
             readWriteCacheMap.invalidate(key);
             Collection<Key> keysWithRegions = regionSpecificKeys.get(key);
             if (null != keysWithRegions && !keysWithRegions.isEmpty()) {
