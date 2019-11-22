@@ -105,6 +105,7 @@ class InstanceInfoReplicator implements Runnable {
      */
     public void run() {
         try {
+            logger.info("注册实例到server，线程真正的时间:{}",System.currentTimeMillis());
             discoveryClient.refreshInstanceInfo();
 
             Long dirtyTimestamp = instanceInfo.isDirtyWithTime();

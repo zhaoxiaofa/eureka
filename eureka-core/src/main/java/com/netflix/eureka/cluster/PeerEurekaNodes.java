@@ -74,7 +74,7 @@ public class PeerEurekaNodes {
     }
 
     /**
-     * 这个是 eureka 集群节点同步的方法
+     * 这个是 eureka 集群节点数据同步的方法
      */
     public void start() {
         taskExecutor = Executors.newSingleThreadScheduledExecutor(
@@ -88,6 +88,7 @@ public class PeerEurekaNodes {
                 }
         );
         try {
+            // 更新集群信息
             updatePeerEurekaNodes(resolvePeerUrls());
             Runnable peersUpdateTask = new Runnable() {
                 @Override
@@ -100,6 +101,7 @@ public class PeerEurekaNodes {
 
                 }
             };
+            // 这个创建了一个后台线程，默认10分钟一次
             taskExecutor.scheduleWithFixedDelay(
                     peersUpdateTask,
                     serverConfig.getPeerEurekaNodesUpdateIntervalMs(),
@@ -127,6 +129,7 @@ public class PeerEurekaNodes {
     }
 
     /**
+     * 解析配置文件中其他server的URL地址
      * Resolve peer URLs.
      *
      * @return peer URLs with node's own URL filtered out

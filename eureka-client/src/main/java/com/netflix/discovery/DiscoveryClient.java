@@ -1344,6 +1344,7 @@ public class DiscoveryClient implements EurekaClient {
 
             // 这里是启动了一个线程
             // 延迟注册的时间是40秒，线程真正执行的时候是执行的 instanceInfoReplicator 的 run 方法
+            logger.info("启动注册到server的线程，当前时间为:{}",System.currentTimeMillis());
             instanceInfoReplicator.start(clientConfig.getInitialInstanceInfoReplicationIntervalSeconds());
         } else {
             logger.info("Not registering with Eureka server per configuration");

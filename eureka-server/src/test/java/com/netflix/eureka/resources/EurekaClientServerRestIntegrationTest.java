@@ -42,7 +42,6 @@ import static org.mockito.Mockito.when;
  * Test REST layer of client/server communication. This test instantiates fully configured Jersey container,
  * which is essential to verifying content encoding/decoding with different format types (JSON vs XML, compressed vs
  * uncompressed).
- *
  * @author Tomasz Bak
  */
 public class EurekaClientServerRestIntegrationTest {
@@ -69,6 +68,7 @@ public class EurekaClientServerRestIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
+        // 设置了一堆配置项到系统设置里面 System
         injectEurekaConfiguration();
         startServer();
         createEurekaServerConfig();
@@ -119,6 +119,8 @@ public class EurekaClientServerRestIntegrationTest {
         EurekaHttpResponse<Void> httpResponse = jerseyEurekaClient.register(instanceInfo);
 
         assertThat(httpResponse.getStatusCode(), is(equalTo(204)));
+        // 在停止server之前先停个几分钟看看情况
+        Thread.sleep(1000 * 60 * 5);
     }
 
     /**

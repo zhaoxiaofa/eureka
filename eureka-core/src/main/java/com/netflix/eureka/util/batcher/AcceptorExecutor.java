@@ -6,12 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.netflix.eureka.util.batcher.TaskProcessor.ProcessingResult;
@@ -177,12 +172,16 @@ class AcceptorExecutor<ID, T> {
         return singleItemWorkQueue.size() + batchWorkQueue.size();
     }
 
+    /**
+     * 三层队列同步批处理机制
+     */
     class AcceptorRunner implements Runnable {
         @Override
         public void run() {
             long scheduleTime = 0;
             while (!isShutdown.get()) {
                 try {
+                    // 这个是从 acceptorQueue中不断的取数据放到 processingOrder 队列中去
                     drainInputQueues();
 
                     int totalItems = processingOrder.size();
@@ -192,6 +191,7 @@ class AcceptorExecutor<ID, T> {
                         scheduleTime = now + trafficShaper.transmissionDelay();
                     }
                     if (scheduleTime <= now) {
+                        // 一个个batch放到 batchWorkQueue 中去
                         assignBatchWork();
                         assignSingleItemWork();
                     }
@@ -231,6 +231,10 @@ class AcceptorExecutor<ID, T> {
             } while (!reprocessQueue.isEmpty() || !acceptorQueue.isEmpty() || pendingTasks.isEmpty());
         }
 
+        /**
+         * 一个死循环，只要acceptorQueue队列不为空，就一直
+         * 写数据到 processingOrder
+         */
         private void drainAcceptorQueue() {
             while (!acceptorQueue.isEmpty()) {
                 appendTaskHolder(acceptorQueue.poll());

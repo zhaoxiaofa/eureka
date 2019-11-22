@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * BootStrap 看类的命名就知道是eureka的启动类
  * The class that kick starts the eureka server.
  *
  * <p>
@@ -111,6 +112,7 @@ public class EurekaBootStrap implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
+            // 这个是拉取一些配置环境，暂时可以不管，类似于Spring、Mybatis 在启动的时候都会加载一些基础的配置环境
             initEurekaEnvironment();
             initEurekaServerContext();
 
